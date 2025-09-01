@@ -1,0 +1,20 @@
+{
+    "name": "craft/mini-skeleton",
+    "description": "This is a mini-skeleton of Craft framework.",
+    "type": "project",
+    "require": {
+        "php": ">=7.1",
+        "datahihi1/tiny-env":"dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Craft\\":"src/"
+        },
+        "files": [
+            "src/Application/helper/helper.php",
+            "src/Application/helper/source.php",
+            "src/Kit/helper/var_dump.php"
+        ]
+    }
+}
