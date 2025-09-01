@@ -57,7 +57,7 @@ class WelcomeController extends Controller
         }
 
         try{
-            $sqlite = new SQLite3(ROOT_DIR . '/public/' . $sqlitefile . '.db');
+            $sqlite = new \SQLite3(ROOT_DIR . '/public/' . $sqlitefile . '.db');
             if (!$sqlite) {
                 throw new \Exception('Could not connect to SQLite database');
             }
@@ -67,7 +67,7 @@ class WelcomeController extends Controller
             $dbError = $e->getMessage();
         }
 
-        return View::render('welcome', [
+        return \Craft\Application\View::render('welcome', [
             'phpVersion' => $phpVersion,
             'phpMinVersion' => $phpMinVersion,
             'phpOk' => $phpOk,
