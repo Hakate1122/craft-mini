@@ -1,0 +1,1 @@
+2025-09-02 23:25:16 | Exception: Craft\Application\Router::get(): Argument #1 ($path) must be of type string, array given, called in F:\laragon\www\CraftMini-Main\src\Application\Router.php on line 110 | File: F:\laragon\www\CraftMini-Main\src\Application\Router.php | Line: 159

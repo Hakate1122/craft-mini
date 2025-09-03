@@ -1,6 +1,8 @@
 <?php
 namespace App\Controller;
 
+use Craft\Application\Router;
+
 class WelcomeController extends Controller
 {
     public function welcome()
@@ -85,5 +87,11 @@ class WelcomeController extends Controller
             'dbname' => $dbname,
             'sqlitefile' => $sqlitefile,
         ]);
+    }
+
+    #[Router(method: 'GET', router: '/test', api: true, name: 'test.route')]
+    public function test()
+    {
+        return 'This is a test route';
     }
 }

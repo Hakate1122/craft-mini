@@ -1,0 +1,2 @@
+2025-09-02 23:02:58 | Error [8192]: Creation of dynamic property Craft\Application\Router::$router is deprecated | File: F:\laragon\www\CraftMini-Main\src\Application\Router.php | Line: 68
+2025-09-02 23:07:27 | Error [8192]: Creation of dynamic property Craft\Application\Router::$router is deprecated | File: F:\laragon\www\CraftMini-Main\src\Application\Router.php | Line: 68

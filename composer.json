@@ -16,5 +16,8 @@
             "src/Application/helper/source.php",
             "src/Kit/helper/var_dump.php"
         ]
+    },
+    "suggest": {
+        "php-8.0": "For using attributes routing feature."
     }
 }

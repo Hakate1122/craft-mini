@@ -56,9 +56,27 @@ class Router
     /** @var array $groupStack Stores the group stack for nested groups */
     private static $groupStack = [];
 
-    public function __construct($request = null, $router = null, $method = null)
+    /** @var mixed $router Stores the router object or array. */
+    private $router;
+    private $method;
+    private $name;
+    private $api;
+
+    /**
+     * Router constructor.
+     * @param mixed $request The request object or array.
+     * @param mixed $router The router object or array.
+     * @param mixed $method The HTTP method (GET, POST, etc.).
+     * @param mixed $name The name of the route.
+     * @param mixed $api Whether the route is an API route.
+     */
+    public function __construct($request = null, $router = null, $method = null, $name = null, $api = false)
     {
         $this->request = $request;
+        $this->router = $router;
+        $this->method = $method;
+        $this->name = $name;
+        $this->api = $api;
     }
     public function addMiddleware(callable $middleware): void
     {
@@ -78,7 +96,8 @@ class Router
     public static function scanControllerAttributes(array $controllerClasses)
     {
         foreach ($controllerClasses as $controllerClass) {
-            if (!class_exists($controllerClass)) continue;
+            if (!class_exists($controllerClass))
+                continue;
             $refClass = new \ReflectionClass($controllerClass);
             foreach ($refClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                 $attributes = $method->getAttributes(self::class);
@@ -87,51 +106,49 @@ class Router
                     $httpMethod = strtoupper($args['method'] ?? 'GET');
                     $route = $args['router'] ?? null;
                     $routeName = $args['name'] ?? null;
+                    $isApi = !empty($args['api']);
+
                     if ($route) {
                         $routeObj = null;
-                        switch ($httpMethod) {
-                            case 'GET':
-                                $routeObj = self::get($route, [$controllerClass, $method->getName()]);
-                                break;
-                            case 'POST':
-                                $routeObj = self::post($route, [$controllerClass, $method->getName()]);
-                                break;
-                            case 'PUT':
-                                $routeObj = self::put($route, [$controllerClass, $method->getName()]);
-                                break;
-                            case 'DELETE':
-                                $routeObj = self::delete($route, [$controllerClass, $method->getName()]);
-                                break;
-                            default:
-                                $routeObj = self::get($route, [$controllerClass, $method->getName()]);
+                        if ($isApi) {
+                            // Đăng ký vào API routes
+                            switch ($httpMethod) {
+                                case 'GET':
+                                    $routeObj = self::apiGet($route, [$controllerClass, $method->getName()]);
+                                    break;
+                                case 'POST':
+                                    $routeObj = self::apiPost($route, [$controllerClass, $method->getName()]);
+                                    break;
+                                case 'PUT':
+                                    $routeObj = self::apiPut($route, [$controllerClass, $method->getName()]);
+                                    break;
+                                case 'DELETE':
+                                    $routeObj = self::apiDelete($route, [$controllerClass, $method->getName()]);
+                                    break;
+                                default:
+                                    $routeObj = self::apiGet($route, [$controllerClass, $method->getName()]);
+                            }
+                        } else {
+                            // Đăng ký vào standard routes
+                            switch ($httpMethod) {
+                                case 'GET':
+                                    $routeObj = self::get($route, [$controllerClass, $method->getName()]);
+                                    break;
+                                case 'POST':
+                                    $routeObj = self::post($route, [$controllerClass, $method->getName()]);
+                                    break;
+                                case 'PUT':
+                                    $routeObj = self::put($route, [$controllerClass, $method->getName()]);
+                                    break;
+                                case 'DELETE':
+                                    $routeObj = self::delete($route, [$controllerClass, $method->getName()]);
+                                    break;
+                                default:
+                                    $routeObj = self::get($route, [$controllerClass, $method->getName()]);
+                            }
                         }
                         if ($routeName && method_exists($routeObj, 'name')) {
                             $routeObj->name($routeName);
-                        }
-                    }
-                }
-                $attributes = $method->getAttributes(self::class);
-                foreach ($attributes as $attr) {
-                    $args = $attr->getArguments();
-                    $httpMethod = strtoupper($args['method'] ?? 'GET');
-                    $route = $args['router'] ?? null;
-                    if ($route) {
-                        // Đăng ký route tương ứng
-                        switch ($httpMethod) {
-                            case 'GET':
-                                self::get($route, [$controllerClass, $method->getName()]);
-                                break;
-                            case 'POST':
-                                self::post($route, [$controllerClass, $method->getName()]);
-                                break;
-                            case 'PUT':
-                                self::put($route, [$controllerClass, $method->getName()]);
-                                break;
-                            case 'DELETE':
-                                self::delete($route, [$controllerClass, $method->getName()]);
-                                break;
-                            default:
-                                self::get($route, [$controllerClass, $method->getName()]);
                         }
                     }
                 }
@@ -351,7 +368,7 @@ class Router
         }
         return '/api/' . $trimmed;
     }
-    
+
     /**
      * Run the route handler after merging static routes.
      */
