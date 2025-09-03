@@ -12,6 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_method'])) {
 
 $router->get('/', [WelcomeController::class, 'welcome'])->name('welcome');
 
+$router->get('/test2', [WelcomeController::class, 'test2'])->name('test2');
+
 $router->scanControllerAttributes([
     WelcomeController::class
 ]);

@@ -3,6 +3,8 @@ namespace Craft\Application;
 
 use Closure;
 use Exception;
+use Craft\Application\Attribute\Router as RouterAttribute;
+use Craft\Application\Attribute\View as ViewAttribute;
 
 /**
  * Router Class to handle HTTP routing in the application.
@@ -100,7 +102,26 @@ class Router
                 continue;
             $refClass = new \ReflectionClass($controllerClass);
             foreach ($refClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                $attributes = $method->getAttributes(self::class);
+                // Quét View attribute
+                $viewAttrs = $method->getAttributes(ViewAttribute::class);
+                foreach ($viewAttrs as $viewAttr) {
+                    $args = $viewAttr->getArguments();
+                    $viewName = $args['view'] ?? null;
+                    $viewData = $args['data'] ?? [];
+                    if ($viewName) {
+                        // Đăng ký route GET cho method này, tự động render view
+                        self::get('/' . $method->getName(), function() use ($viewName, $viewData, $controllerClass, $method) {
+                            // Nếu method trả về mảng, truyền vào view
+                            $instance = new $controllerClass();
+                            $result = $instance->{$method->getName()}();
+                            if (is_array($result)) {
+                                $viewData = array_merge($viewData, $result);
+                            }
+                            echo \Craft\Application\View::render($viewName, $viewData);
+                        });
+                    }
+                }
+                $attributes = $method->getAttributes(RouterAttribute::class);
                 foreach ($attributes as $attr) {
                     $args = $attr->getArguments();
                     $httpMethod = strtoupper($args['method'] ?? 'GET');
@@ -111,7 +132,6 @@ class Router
                     if ($route) {
                         $routeObj = null;
                         if ($isApi) {
-                            // Đăng ký vào API routes
                             switch ($httpMethod) {
                                 case 'GET':
                                     $routeObj = self::apiGet($route, [$controllerClass, $method->getName()]);
@@ -129,7 +149,6 @@ class Router
                                     $routeObj = self::apiGet($route, [$controllerClass, $method->getName()]);
                             }
                         } else {
-                            // Đăng ký vào standard routes
                             switch ($httpMethod) {
                                 case 'GET':
                                     $routeObj = self::get($route, [$controllerClass, $method->getName()]);

@@ -1,7 +1,8 @@
 <?php
 namespace App\Controller;
 
-use Craft\Application\Router;
+use Craft\Application\Attribute\Router;
+use Craft\Application\Attribute\View;
 
 class WelcomeController extends Controller
 {
@@ -93,5 +94,11 @@ class WelcomeController extends Controller
     public function test()
     {
         return 'This is a test route';
+    }
+
+    #[View('test2')]
+    public function test2()
+    {
+        $test = 'This is test2';
     }
 }
